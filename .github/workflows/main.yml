@@ -1,25 +1,43 @@
-name: 'Azure App Service FTPS Deployment'
+name: 'App Service FTPS Deployment'
 
-trigger:
-  - main  # Trigger the pipeline on any push to the 'main' branch
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
-pool:
-  vmImage: 'ubuntu-latest'  # Use the Ubuntu image for the build agent
+jobs:
+  deploy:
+    runs-on: windows-latest  # Runs on Windows environment
 
-steps:
-# Step 1: Install lftp for FTPS deployment
-- script: |
-    sudo apt-get install lftp -y
-  displayName: 'Install lftp'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2  # Checkout the repository
 
-# Step 2: Deploy files to Azure Web App via FTPS
-- script: |
-    # Define FTPS credentials and server
-    FTP_HOST="waws-prod-yt1-079.ftp.azurewebsites.windows.net"  # FTPS server URL
-    FTP_USER="azure-practice\$azure-practice"  # FTPS Username (replace with actual username)
-    FTP_PASS="JrwfoubgvipNNhG9TaA9LiPA8FRvSwmNxePnmakwSTunDjCQyMeo5BS82EpC"  # FTPS Password (replace with actual password)
-    
-    # Deploy content from './html' folder to the Azure Web App's wwwroot directory
-    lftp -u "$FTP_USER","$FTP_PASS" "ftps://$FTP_HOST" -e "set ftp:passive-mode true; mirror -R ./html /site/wwwroot; bye"
-  displayName: 'Deploy to Azure Web App via FTPS'
+      - name: Install FTP Client (lftp) and CA Certificates
+        run: |
+          choco install lftp  # Install the lftp FTP client
+          # Manually install CA certificates from a trusted source
+          Invoke-WebRequest -Uri "https://curl.se/ca/cacert.pem" -OutFile "$env:temp\cacert.pem"
+          echo "CA certificates installed successfully."
 
+      - name: FTPS Deploy to Azure App Service
+        run: |
+          # Define the FTPS server and credentials (hardcoded)
+          $FTP_HOST="waws-prod-yt1-079.ftp.azurewebsites.windows.net"
+          $FTP_USER="azure-practice\$azure-practice"  # Your FTPS Username
+          $FTP_PASS="JrwfoubgvipNNhG9TaA9LiPA8FRvSwmNxePnmakwSTunDjCQyMeo5BS82EpC"  # Your FTPS Password
+          $CACERT_PATH="$env:temp\cacert.pem"  # Path to the CA certificate
+
+          # Deploy the HTML and CSS files directly from the root of the repository
+          echo "Deploying to $FTP_HOST"
+
+          # Upload files using lftp (upload everything in the root directory to /site/wwwroot)
+          lftp -e "
+          set ftp:ssl-force true
+          set ssl:verify-certificate yes
+          set ssl:ca-file $CACERT_PATH
+          open ftps://$($FTP_USER):$($FTP_PASS)@$($FTP_HOST)
+          mirror -R ./ /site/wwwroot --ignore-time --verbose
+          bye
+          "
