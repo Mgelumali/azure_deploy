@@ -28,15 +28,6 @@ jobs:
 
           echo "Deploying to $FTP_HOST"
 
-          # Upload files using LFTP
-          lftp -e "
-          set ftp:ssl-force true
-          set ssl:verify-certificate no  # Disable SSL verification for testing
-          open ftps://$FTP_USER:$FTP_PASS@$FTP_HOST
-          mirror -R ./ /site/wwwroot --ignore-time --verbose
-          bye
-          "
-
       - name: Verify Deployment
         run: |
           echo "Deployment completed. Verify files on Azure App Service."
