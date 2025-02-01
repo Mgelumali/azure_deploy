@@ -8,31 +8,35 @@ on:
 
 jobs:
   deploy:
-    runs-on: windows-latest  # Runs on Windows environment
+    runs-on: ubuntu-latest  # Use Linux runner for LFTP compatibility
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2  # Checkout the repository
+        uses: actions/checkout@v2
 
-      - name: Install FTP Client (lftp)
+      - name: Install LFTP
         run: |
-          choco install lftp -y  # Install the lftp FTP client
+          sudo apt-get update
+          sudo apt-get install -y lftp
 
       - name: FTPS Deploy to Azure App Service
         run: |
-          # Define the FTPS server and credentials (hardcoded)
-          $FTP_HOST="waws-prod-yt1-079.ftp.azurewebsites.windows.net"
-          $FTP_USER="azure-practice\$azure-practice"  # Your FTPS Username
-          $FTP_PASS="JrwfoubgvipNNhG9TaA9LiPA8FRvSwmNxePnmakwSTunDjCQyMeo5BS82EpC"  # Your FTPS Password
+          # Hardcoded FTPS credentials
+          FTP_HOST="waws-prod-yt1-079.ftp.azurewebsites.windows.net"
+          FTP_USER="azure-practice\$azure-practice"
+          FTP_PASS="JrwfoubgvipNNhG9TaA9LiPA8FRvSwmNxePnmakwSTunDjCQyMeo5BS82EpC"
 
-          # Deploy the HTML and CSS files directly from the root of the repository
           echo "Deploying to $FTP_HOST"
 
-          # Upload files using lftp (upload everything in the root directory to /site/wwwroot)
+          # Upload files using LFTP
           lftp -e "
           set ftp:ssl-force true
-          set ssl:verify-certificate no  # Disable certificate verification to avoid CA issues
-          open ftps://$($FTP_USER):$($FTP_PASS)@$($FTP_HOST)
+          set ssl:verify-certificate no  # Disable SSL verification for testing
+          open ftps://$FTP_USER:$FTP_PASS@$FTP_HOST
           mirror -R ./ /site/wwwroot --ignore-time --verbose
           bye
           "
+
+      - name: Verify Deployment
+        run: |
+          echo "Deployment completed. Verify files on Azure App Service."
