@@ -1,4 +1,4 @@
-name: 'Azure App Service FTPS Deployment '
+name: 'Azure App Service FTPS Deployment'
 
 on:
   push:
@@ -23,10 +23,17 @@ jobs:
         run: |
           # Hardcoded FTPS credentials
           FTP_HOST="waws-prod-yt1-079.ftp.azurewebsites.windows.net"
-          FTP_USER="azure-practice\$azure-practice"
-          FTP_PASS="JrwfoubgvipNNhG9TaA9LiPA8FRvSwmNxePnmakwSTunDjCQyMeo5BS82EpC"
-
-          echo "Deploying to $FTP_HOST"
+          FTP_USER="azure-practice\$azure-practice"  # Replace with your actual FTP username
+          FTP_PASS="JrwfoubgvipNNhG9TaA9LiPA8FRvSwmNxePnmakwSTunDjCQyMeo5BS82EpC"  # Replace with your actual FTP password
+          # Upload the files to the 'site/wwwroot' directory on Azure App Service using FTPS
+          lftp -u $FTP_USER,$FTP_PASS $FTP_HOST <<EOF
+          mirror -R ./dist /site/wwwroot
+          quit
+          EOF
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
 
       - name: Verify Deployment
         run: |
