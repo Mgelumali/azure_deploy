@@ -1,0 +1,36 @@
+name: 'App Service FTPS Deployment'
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: windows-latest  # Runs on Windows environment
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2  # Checkout the repository
+
+      - name: Install FTP Client (lftp)
+        run: |
+          choco install lftp  # Install the lftp FTP client on Windows runner
+
+      - name: FTPS Deploy to Azure App Service
+        run: |
+          # Define the FTPS server and credentials (hardcoded)
+          FTP_HOST="waws-prod-yt1-079.ftp.azurewebsites.windows.net"
+          FTP_USER="REDACTED"  # Your FTPS Username
+          FTP_PASS="REDACTED"  # Your FTPS Password
+
+          # Use lftp to upload files to the Azure App Service's /site/wwwroot directory
+          echo "Deploying to $FTP_HOST"
+
+          # Upload files using lftp (upload everything in the ./out folder to /site/wwwroot)
+          lftp -e "
+          open ftps://$FTP_USER:$FTP_PASS@$FTP_HOST
+          mirror -R ./out /site/wwwroot --ignore-time --verbose
+          bye
+          "
