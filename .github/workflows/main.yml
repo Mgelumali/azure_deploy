@@ -1,4 +1,4 @@
-name: 'Azure App Service FTPS Deployment'
+name: 'Azure Web App Deployment'
 
 on:
   push:
@@ -8,25 +8,14 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # Use Linux runner for FTPS compatibility
+    runs-on: ubuntu-latest  # Use Linux runner for deployment
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-      - name: Install LFTP
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y lftp  # Ensure LFTP is installed
-  
 
-      - name: Sync files to Azure App Service
-        run: |
-          $FTP_HOST: waws-prod-yt1-079.ftp.azurewebsites.windows.net
-          $FTP_USER: azure-practice\$azure-practice  # Use your actual FTP username
-          $FTP_PASS: 'JrwfoubgvipNNhG9TaA9LiPA8FRvSwmNxePnmakwSTunDjCQyMeo5BS82EpC'  # Store FTP password as GitHub Secret
-          # Use lftp for FTPS deployment
-          lftp -e "mirror -R ./ ./site/wwwroot; quit" -u $FTP_USER,$FTP_PASS ftps://$FTP_HOST
-
-      - name: Verify Deployment
-        run: |
-          echo "Deployment completed. Verify files on Azure App Service."
+      - name: 'Azure Web App Deploy'
+        uses: Azure/webapps-deploy@v2
+        with:
+          app-name: 'azure-practice'  # Replace with your actual Azure Web App name
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}  # Securely store the publish profile as a GitHub Secret
