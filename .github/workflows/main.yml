@@ -25,15 +25,11 @@ jobs:
           FTP_HOST="waws-prod-yt1-079.ftp.azurewebsites.windows.net"
           FTP_USER="azure-practice\$azure-practice"  # Replace with your actual FTP username
           FTP_PASS="JrwfoubgvipNNhG9TaA9LiPA8FRvSwmNxePnmakwSTunDjCQyMeo5BS82EpC"  # Replace with your actual FTP password
-          # Upload the files to the 'site/wwwroot' directory on Azure App Service using FTPS
+          # Deploy repository files to the app service's wwwroot directory
           lftp -u $FTP_USER,$FTP_PASS $FTP_HOST <<EOF
-          mirror -R ./dist /site/wwwroot
+          mirror -R ./ ./site/wwwroot  # Upload all files from the repository to the wwwroot folder
           quit
           EOF
-        env:
-          FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USER: ${{ secrets.FTP_USER }}
-          FTP_PASS: ${{ secrets.FTP_PASS }}
 
       - name: Verify Deployment
         run: |
