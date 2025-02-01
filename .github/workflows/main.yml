@@ -18,7 +18,7 @@ jobs:
         run: |
           choco install lftp  # Install the lftp FTP client
           # Manually install CA certificates from a trusted source
-          Invoke-WebRequest -Uri "https://curl.se/ca/cacert.pem" -OutFile "C:\Program Files\Git\mingw64\ssl\certs\cacert.pem"
+          Invoke-WebRequest -Uri "https://curl.se/ca/cacert.pem" -OutFile "$env:temp\cacert.pem"
           echo "CA certificates installed successfully."
 
       - name: FTPS Deploy to Azure App Service
