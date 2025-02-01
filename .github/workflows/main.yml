@@ -8,28 +8,21 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # Use Linux runner for LFTP compatibility
+    runs-on: ubuntu-latest  # Use Linux runner for FTPS compatibility
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install LFTP
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y lftp
-
-      - name: FTPS Deploy to Azure App Service
-        run: |
-          # Hardcoded FTPS credentials
-          FTP_HOST="waws-prod-yt1-079.ftp.azurewebsites.windows.net"
-          FTP_USER="azure-practice\$azure-practice"  # Replace with your actual FTP username
-          FTP_PASS="JrwfoubgvipNNhG9TaA9LiPA8FRvSwmNxePnmakwSTunDjCQyMeo5BS82EpC"  # Replace with your actual FTP password
-          # Deploy repository files to the app service's wwwroot directory
-          lftp -u $FTP_USER,$FTP_PASS $FTP_HOST <<EOF
-          mirror -R ./ ./site/wwwroot  # Upload all files from the repository to the wwwroot folder
-          quit
-          EOF
+      - name: Sync files to Azure App Service
+        uses: SamKirkland/FTP-Deploy-Action@v5
+        with:
+          server: waws-prod-yt1-079.ftp.azurewebsites.windows.net
+          username: azure-practice\$azure-practice  # Use your actual FTP username
+          password: 'JrwfoubgvipNNhG9TaA9LiPA8FRvSwmNxePnmakwSTunDjCQyMeo5BS82EpC'  # Store FTP password as GitHub Secret
+          protocol: ftps  # FTPS protocol
+          local-dir: ./  # Directory to upload from (root of your repository)
+          remote-dir: /site/wwwroot  # Remote destination directory for Azure App Service
 
       - name: Verify Deployment
         run: |
