@@ -30,8 +30,8 @@ jobs:
 
           # Upload files using lftp (upload everything in the root directory to /site/wwwroot)
           lftp -e "
-          set ftp:ssl-force true
-          set ssl:verify-certificate no  # Disable certificate verification to avoid CA issues
+          #set ftp:ssl-force true
+          #set ssl:verify-certificate no  # Disable certificate verification to avoid CA issues
           open ftps://$($FTP_USER):$($FTP_PASS)@$($FTP_HOST)
           mirror -R ./ /site/wwwroot --ignore-time --verbose
           bye
