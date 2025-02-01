@@ -1,4 +1,4 @@
-name: 'App Service FTPS Deployment '
+name: 'App Service FTPS Deployment'
 
 on:
   push:
@@ -14,9 +14,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2  # Checkout the repository
 
-      - name: Install FTP Client (lftp)
+      - name: Install FTP Client (lftp) and CA Certificates
         run: |
-          choco install lftp  # Install the lftp FTP client on Windows runner
+          choco install lftp  # Install the lftp FTP client
+          choco install curl-ca-bundle  # Install CA certificates to verify SSL
 
       - name: FTPS Deploy to Azure App Service
         run: |
@@ -25,10 +26,10 @@ jobs:
           $FTP_USER="REDACTED"  # Your FTPS Username
           $FTP_PASS="REDACTED"  # Your FTPS Password
 
-          # Use lftp to upload files to the Azure App Service's /site/wwwroot directory
+          # Deploy the HTML and CSS files directly from the root of the repository
           echo "Deploying to $FTP_HOST"
 
-          # Upload files using lftp (upload everything in the ./out folder to /site/wwwroot)
+          # Upload files using lftp (upload everything in the root directory to /site/wwwroot)
           lftp -e "
           open ftps://$($FTP_USER):$($FTP_PASS)@$($FTP_HOST)
           mirror -R ./ /site/wwwroot --ignore-time --verbose
