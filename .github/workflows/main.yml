@@ -1,4 +1,4 @@
-name: 'App Service FTPS Deployment'
+name: 'App Service FTPS Deployment '
 
 on:
   push:
