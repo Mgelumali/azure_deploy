@@ -15,14 +15,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Sync files to Azure App Service
-        uses: appleboy/ftp-action@v1
-        with:
-          server: waws-prod-yt1-079.ftp.azurewebsites.windows.net
-          username: azure-practice\$azure-practice  # Use your actual FTP username
-          password: 'JrwfoubgvipNNhG9TaA9LiPA8FRvSwmNxePnmakwSTunDjCQyMeo5BS82EpC'  # Store FTP password as GitHub Secret
-          protocol: ftps  # FTPS protocol
-          local-dir: ./  # Directory to upload from (root of your repository)
-          remote-dir: /site/wwwroot  # Remote destination directory for Azure App Service
+        run: |
+          $FTP_HOST: waws-prod-yt1-079.ftp.azurewebsites.windows.net
+          $FTP_USER: azure-practice\$azure-practice  # Use your actual FTP username
+          $FTP_PASS: 'JrwfoubgvipNNhG9TaA9LiPA8FRvSwmNxePnmakwSTunDjCQyMeo5BS82EpC'  # Store FTP password as GitHub Secret
+          # Use lftp for FTPS deployment
+          lftp -e "mirror -R ./ ./site/wwwroot; quit" -u $FTP_USER,$FTP_PASS ftps://$FTP_HOST
 
       - name: Verify Deployment
         run: |
